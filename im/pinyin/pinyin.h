@@ -170,7 +170,7 @@ FCITX_CONFIGURATION(
     OptionWithAnnotation<bool, OptionalHideInDescription> showShuangpinMode{
         this, "ShowShuangpinMode", _("Show current shuangpin mode"), true};
     Option<int, IntConstrain> pageSize{
-        this, "PageSize", _("Candidates Per Page"), 7, IntConstrain(3, 10)};
+        this, "PageSize", _("Candidates Per Page"), 5, IntConstrain(3, 10)};
     Option<bool> spellEnabled{this, "SpellEnabled",
                               _("Show English Candidates"), true};
     Option<bool> symbolsEnabled{this, "SymbolsEnabled",
