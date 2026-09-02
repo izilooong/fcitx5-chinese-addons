@@ -2306,17 +2306,79 @@ void PinyinEngine::keyEvent(const InputMethodEntry &entry, KeyEvent &event) {
 
 void PinyinEngine::setSubConfig(const std::string &path,
                                 const RawConfig &config) {
-    FCITX_UNUSED(config);
     if (path == "dictmanager") {
         loadExtraDict();
     } else if (path == "clearuserdict") {
         ime_->dict()->clear(libime::PinyinDictionary::UserDict);
+        saveUserDict();
     } else if (path == "clearalldict") {
         ime_->dict()->clear(libime::PinyinDictionary::UserDict);
         ime_->model()->history().clear();
+        saveUserDict();
     } else if (path == "customphrase") {
         loadCustomPhrase();
+    } else if (path == "userdict") {
+        // config carries the pinyin/word pair to remove from user dict
+        const auto pinyinNode = config.get("pinyin");
+        const auto wordNode = config.get("word");
+        if (pinyinNode && wordNode) {
+            ime_->dict()->removeWord(libime::PinyinDictionary::UserDict,
+                                     pinyinNode->value(), wordNode->value());
+            saveUserDict();
+        }
     }
+}
+
+const fcitx::Configuration *
+PinyinEngine::getSubConfig(const std::string &path) const {
+    if (path != "userdict") {
+        return nullptr;
+    }
+    // Option<T> only exposes a const view of its value; we accumulate into a
+    // local vector and swap the whole list in via setValue() instead of
+    // mutating the stored vector through Option's const operator->.
+    std::vector<PinyinUserDictEntryConfig> words;
+    const auto *dict = ime_->dict();
+    if (dict) {
+        const auto &trie = *dict->trie(libime::PinyinDictionary::UserDict);
+        // mirrors libime PinyinDictionary::pinyinHanziSep, which is internal to libime
+        constexpr char kUserDictSep = '!';
+        trie.foreach([&](float /*value*/, size_t len, uint64_t pos) {
+            std::string buf;
+            trie.suffix(buf, len, pos);
+            auto sep = buf.find(kUserDictSep);
+            if (sep == std::string::npos) {
+                return true;
+            }
+            auto fullPinyin =
+                libime::PinyinEncoder::decodeFullPinyin(buf.data(), sep);
+            std::string_view hanzi(buf.data() + sep + 1, buf.size() - sep - 1);
+            PinyinUserDictEntryConfig entry;
+            entry.pinyin.setValue(fullPinyin);
+            entry.word.setValue(std::string(hanzi));
+            words.push_back(std::move(entry));
+            return true;
+        });
+    }
+    userDictConfig_.entries.setValue(std::move(words));
+    return &userDictConfig_;
+}
+
+void PinyinEngine::saveUserDict() {
+    const auto &standardPath = StandardPaths::global();
+    standardPath.safeSave(
+        StandardPathsType::PkgData, "pinyin/user.dict", [this](int fd) {
+            OFDStreamBuf buffer(fd);
+            std::ostream out(&buffer);
+            try {
+                ime_->dict()->save(libime::PinyinDictionary::UserDict, out,
+                                   libime::PinyinDictFormat::Binary);
+                return static_cast<bool>(out);
+            } catch (const std::exception &e) {
+                PINYIN_ERROR() << "Failed to save user dict: " << e.what();
+                return false;
+            }
+        });
 }
 
 void PinyinEngine::reset(const InputMethodEntry & /*entry*/,

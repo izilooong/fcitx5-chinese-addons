@@ -43,6 +43,20 @@
 #include <libime/pinyin/pinyincontext.h>
 #include <libime/pinyin/pinyinime.h>
 #include <libime/pinyin/pinyinprediction.h>
+#include <vector>
+
+// Carriers for the "userdict" sub-config enumeration exposed to the Android UI.
+// RawConfig is NOT a fcitx::Configuration subclass, so getSubConfig() cannot
+// return a RawConfig*; instead we wrap the dynamic word list in a proper
+// Configuration type so mergeConfigDesc() can serialize it like any other
+// sub-config.
+FCITX_CONFIGURATION(PinyinUserDictEntryConfig,
+                    fcitx::Option<std::string> pinyin{this, "pinyin", "pinyin"};
+                    fcitx::Option<std::string> word{this, "word", "word"};)
+
+FCITX_CONFIGURATION(PinyinUserDictConfig,
+                    fcitx::Option<std::vector<PinyinUserDictEntryConfig>>
+                        entries{this, "entries", "entries"};)
 #include <list>
 #include <memory>
 #include <optional>
@@ -435,6 +449,8 @@ public:
     void setSubConfig(const std::string &path,
                       const fcitx::RawConfig &config) override;
 
+    const Configuration *getSubConfig(const std::string &path) const override;
+
     libime::PinyinIME *ime() { return ime_.get(); }
     const auto &config() const { return config_; }
 
@@ -502,6 +518,7 @@ private:
     void loadDict(const std::string &fullPath,
                   std::list<std::unique_ptr<TaskToken>> &taskTokens);
     void saveCustomPhrase();
+    void saveUserDict();
 
     Instance *instance_;
     PinyinEngineConfig config_;
@@ -516,6 +533,9 @@ private:
     std::unique_ptr<EventSource> deferEvent_;
     std::unique_ptr<EventSource> deferredPreload_;
     std::unique_ptr<HandlerTableEntry<EventHandler>> event_;
+
+    // reused buffer for getSubConfig("userdict") enumeration result
+    mutable PinyinUserDictConfig userDictConfig_;
     CustomPhraseDict customPhrase_;
     SymbolDict symbols_;
     WorkerThread worker_;
