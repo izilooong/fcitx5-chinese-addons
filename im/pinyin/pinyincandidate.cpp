@@ -163,7 +163,7 @@ StrokeCandidateWord::StrokeCandidateWord(PinyinEngine *engine, std::string hz,
     : PinyinAbstractCandidateWord(selectLength, order), engine_(engine),
       hz_(std::move(hz)) {
     setText(Text(hz_));
-    if (!py.empty()) {
+    if (!py.empty() && *engine->config().pinyinInComment) {
         setComment(Text(std::format("({})", py)));
     }
 }
