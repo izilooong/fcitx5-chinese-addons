@@ -650,7 +650,9 @@ void PinyinEngine::updateUI(InputContext *inputContext) {
             }
         }
         for (const auto &[_, candidates] : candidateSet) {
-            if (candidates.size() > 1) {
+            // Annotate duplicated candidates with their full pinyin, i.e. "着
+            // (zhe)", so that two entries with the same text can be told apart.
+            if (*config_.pinyinInComment && candidates.size() > 1) {
                 for (auto *candidate : candidates) {
                     candidate->setPinyinInComment();
                 }

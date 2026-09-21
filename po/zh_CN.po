@@ -680,6 +680,10 @@ msgstr "预编辑模式"
 msgid "Show complete pinyin in preedit"
 msgstr "在预编辑中显示完整拼音"
 
+#: im/pinyin/pinyin.h:214
+msgid "Show pinyin in candidate comment"
+msgstr "在候选词后显示拼音"
+
 #: im/pinyin/pinyin.h:218
 msgid "Keep the current typed text for next input prediction"
 msgstr "为下次输入预测保留当前输入的文本"

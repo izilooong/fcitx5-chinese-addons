@@ -225,6 +225,8 @@ FCITX_CONFIGURATION(
         !isAndroid() && !isApple() && !isEmscripten()};
     Option<bool> showActualPinyinInPreedit{
         this, "PinyinInPreedit", _("Show complete pinyin in preedit"), false};
+    Option<bool> pinyinInComment{
+        this, "PinyinInComment", _("Show pinyin in candidate comment"), false};
     Option<bool> predictionEnabled{this, "Prediction", _("Enable Prediction"),
                                    isAndroid()};
     OptionWithAnnotation<bool, ToolTipAnnotation> keepCurrentContext{
