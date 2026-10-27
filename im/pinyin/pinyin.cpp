@@ -1853,6 +1853,18 @@ bool PinyinEngine::handlePunc(KeyEvent &event,
         }
         return false;
     }
+    // 数字键只作普通字符输出，不参与候选/上下文结算。
+    // NumberSelectionEnabled=false 时数字键绕开了 handleCandidateList 的选词分支，一路
+    // 落到这里；若照下面的逻辑先把光标处候选 select 掉再让数字回到 App，就会凭空多出
+    // 一个首选字（拼音 "de" 按 3 得到 "的3"）。未上屏的拼音一律按「放弃」处理——既不结算
+    // 候选，也不把原始字母顶出去（否则 "de"+3 → "de3"），数字落屏后输入状态干净。
+    if (c >= U'0' && c <= U'9') {
+        if (!state->context_.empty()) {
+            doReset(inputContext);
+        }
+        return false;
+    }
+
     if (candidateList && !candidateList->empty()) {
         int idx = std::max(candidateList->cursorIndex(), 0);
         candidateList->candidate(idx).select(inputContext);
