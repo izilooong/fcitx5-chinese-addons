@@ -635,6 +635,10 @@ msgstr "显示当前双拼模式"
 msgid "Show English Candidates"
 msgstr "显示英文候选词"
 
+#: im/pinyin/pinyin.h:175
+msgid "Select candidate with number keys"
+msgstr "用数字键选词"
+
 #: im/pinyin/pinyin.h:176
 msgid "Show symbol candidates"
 msgstr "显示符号候选词"

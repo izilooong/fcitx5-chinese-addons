@@ -187,6 +187,11 @@ FCITX_CONFIGURATION(
         this, "PageSize", _("Candidates Per Page"), 5, IntConstrain(3, 10)};
     Option<bool> spellEnabled{this, "SpellEnabled",
                               _("Show English Candidates"), true};
+    // 数字键是否用于候选选择（关闭后 1-9/0 不再选词，直接作为数字上屏/进入拼音缓冲）。
+    // Android 侧（TapFeet）的偏好开关在运行期直接写引擎配置项（见 AndroidFrontend 的配置桥）。
+    Option<bool> numberSelectionEnabled{
+        this, "NumberSelectionEnabled", _("Select candidate with number keys"),
+        true};
     Option<bool> symbolsEnabled{this, "SymbolsEnabled",
                                 _("Show symbol candidates"), true};
     Option<bool> chaiziEnabled{this, "ChaiziEnabled",

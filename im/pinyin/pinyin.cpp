@@ -1272,9 +1272,14 @@ bool PinyinEngine::handlePuncCandidate(KeyEvent &event) {
         return true;
     }
     if (!event.isVirtual()) {
-        int idx = event.key().keyListIndex(selectionKeys_);
-        if (idx == -1 && *config_.useKeypadAsSelectionKey) {
-            idx = event.key().keyListIndex(numpadSelectionKeys_);
+        // NumberSelectionEnabled=false 时数字键不选词（标点候选窗里数字原样落入
+        // fallback 流程，与主候选窗行为一致）。
+        int idx = -1;
+        if (*config_.numberSelectionEnabled) {
+            idx = event.key().keyListIndex(selectionKeys_);
+            if (idx == -1 && *config_.useKeypadAsSelectionKey) {
+                idx = event.key().keyListIndex(numpadSelectionKeys_);
+            }
         }
         if (idx >= 0) {
             event.filterAndAccept();
@@ -1431,9 +1436,13 @@ bool PinyinEngine::handleCandidateList(
         return false;
     }
 
-    int idx = event.key().keyListIndex(selectionKeys_);
-    if (idx == -1 && *config_.useKeypadAsSelectionKey) {
-        idx = event.key().keyListIndex(numpadSelectionKeys_);
+    // NumberSelectionEnabled=false：数字键不选词，直接落入后续流程（作为数字上屏）。
+    int idx = -1;
+    if (*config_.numberSelectionEnabled) {
+        idx = event.key().keyListIndex(selectionKeys_);
+        if (idx == -1 && *config_.useKeypadAsSelectionKey) {
+            idx = event.key().keyListIndex(numpadSelectionKeys_);
+        }
     }
     if (idx >= 0) {
         event.filterAndAccept();
